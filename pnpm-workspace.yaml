@@ -1,0 +1,3 @@
+packages:
+  - ./frontend
+  - ./modules/lib1
