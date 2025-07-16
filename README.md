@@ -6,7 +6,7 @@
 * [vite](https://vite.dev) for builds (and also dev server)
 * [pnpm](https://pnpm.io) instead of `npm` for **monorepo-capable** package management
 * Ability to change code in dependency modules, and use those changes immediately in the web app without recompiling 
-* Ability to use [zod](https://zod.dev) schemas with `.nativeEnum()` across packages without issue, in both application code and [vitest](http://vitest.dev) tests
+* Ability to use [zod](https://zod.dev) schemas with ~~`.nativeEnum()`~~ `.enum()` (updated for Zod 4) across packages without issue, in both application code and [vitest](http://vitest.dev) tests
 * Identify **minimal** required configuration
 
 ## Observations
@@ -144,7 +144,7 @@ Commit `03ca96228c6b5bbcf39e0691151a267d5306ca13`
 
 ### Step 7
 
-At this point we're looking pretty good, except for the default `frontend` tsconfig provided by the Vite scaffold putting a red squiggly under our Enums.  Since we use Enums quite a lot, we will turn that rule off.
+At this point we're looking pretty good, except for the default `frontend` tsconfig provided by the Vite scaffold putting a red squiggly under our Enums.  Since we use Enums quite a lot, we will turn that rule off.  (Wether this is a "good" idea or not is up to you...  I don't completely hate these things.)
 
 * Drop `erasableSyntaxOnly` from `frontend` tsconfig
 
