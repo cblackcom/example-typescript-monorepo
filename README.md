@@ -1,16 +1,32 @@
 # example typescript monorepo.
 
-Goals—
+## Goals — Completed 🏆
+
 * Example Typescript monorepo containing a main web app and some dependency modules
-* [vite](https://vite.dev) for builds
+* [vite](https://vite.dev) for builds (and also dev server)
 * [pnpm](https://pnpm.io) instead of `npm` for **monorepo-capable** package management
 * Ability to change code in dependency modules, and use those changes immediately in the web app without recompiling 
 * Ability to use [zod](https://zod.dev) schemas with `.nativeEnum()` across packages without issue, in both application code and [vitest](http://vitest.dev) tests
 * Identify **minimal** required configuration
 
-Ultimately these goals were met by taking the following steps.  Each step has a commit that can be referred to for the whole change set.
+## Observations
 
-## Step 1
+* With the right setup, you don't need to compile packages in your monorepo before you use them by other packages in the same monorepo. Type declaration `d.ts` files also do not need to be generated.  (Publishing packages to npm or for use outside of the repo is outside the scope of this experiment.)
+* Typescript has its way of resolving packages using `paths` parameters in `tsconfig`, and that drives all of VSCode's intellisense for imports and code.  This is proved in Step 2.
+* Separately, PNPM, with its workspace feature, creates a symlink inside a consuming package's `node_modules` directory to a dependency package within the monorepo.  This has the effect of the dependency's code showing up in `node_modules` just like any other npm-installed package.  The Vite dev server and compiler is then able to find and use the packages without any particular configuration.  This is proved in Steps 3 and 4.
+* Get the Typescript paths configuration and PNPM workspace configuration right, keep it simple, and you ought to be in business.
+
+## Other notes
+
+* At one point I came across the plugin [vite-tsconfig-paths](`https://www.npmjs.com/package/vite-tsconfig-paths`) which seemed like (if I'm understanding correctly) it might eliminate Step 3.  However, the documentation notes some limitations due to Vite API, and it obviously adds automagical complexity to make the compiles work.  In the end, using PNPM workspaces in Step 3 feels logical and straightforward to me now, so I didn't try the plugin out.
+
+---
+
+## Proof
+
+The experiment was ultimately set up according to the below steps.  You you can follow along using the commit hashes posted for each step.
+
+### Step 1
 
 Create a starter main web app using the Vite scaffolding defaults.
 
@@ -33,7 +49,7 @@ pnpm create vite@latest frontend
 
 Commit `1cb403383f9650bc2abebf111f3c4ab106356080`
 
-## Step 2
+### Step 2
 
 Prove out minimal Typescript resolution between modules without any builds.
 
@@ -46,7 +62,7 @@ With these minimal changes, and without other install or build commands, the `fo
 
 Commit `a137aa1914e9705fb502f9ea06028efe77e0c3a0`
 
-## Step 3
+### Step 3
 
 Set up `frontend` Vite compile to find the `lib1` code.
 
@@ -56,7 +72,7 @@ Set up `frontend` Vite compile to find the `lib1` code.
 
 Commit `0d4243d000c2f96b871c9613547728422e737ee6`
 
-## Step 4
+### Step 4
 
 Then use `pnpm` to install the dependencies of `frontend`.
 
@@ -78,7 +94,7 @@ Along with the `pnpm-lock.yaml` file created by the install, check in a `.gitign
 
 Commit `b73a56f26111f9e2beb7588a2277a158bcf67fbd`
 
-## Step 5
+### Step 5
 
 Add a [zod](https://zod.dev) schema to `lib1` and try to use it from `frontend`.
 
@@ -99,7 +115,7 @@ The word "AWESOME!" should appear on the demo page if you view the web app by ru
 
 Commit `e1785d00cc649fe7046f54641e9173adc4828795`
 
-## Step 6
+### Step 6
 
 Add more interesting tests mixing schemas and enums between `frontend` and `lib1`.
 
@@ -126,16 +142,10 @@ These tests would have failed in our previous monorepo setup, but they succeed h
 
 Commit `03ca96228c6b5bbcf39e0691151a267d5306ca13`
 
-## Step 7
+### Step 7
 
 At this point we're looking pretty good, except for the default `frontend` tsconfig provided by the Vite scaffold putting a red squiggly under our Enums.  Since we use Enums quite a lot, we will turn that rule off.
 
 * Drop `erasableSyntaxOnly` from `frontend` tsconfig
 
 Commit `2d358d18d6e9d1840b3d0bb82155ea4fbacd9585`
-
----
-
-## Other notes
-
-* At one point I came across the plugin [vite-tsconfig-paths](`https://www.npmjs.com/package/vite-tsconfig-paths`) which seemed like (if I'm understanding correctly) it might eliminate Step 3.  However, it notes some limitations due to Vite API, and obviously adds automagical complexity to make compiles work.  In the end, using pnpm workspaces in Step 3 feels logical and straightforward to me now, so I didn't try this plugin out.
