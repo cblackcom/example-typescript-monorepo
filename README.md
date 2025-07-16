@@ -133,3 +133,9 @@ At this point we're looking pretty good, except for the default `frontend` tscon
 * Drop `erasableSyntaxOnly` from `frontend` tsconfig
 
 Commit `2d358d18d6e9d1840b3d0bb82155ea4fbacd9585`
+
+---
+
+## Other notes
+
+* At one point I came across the plugin [vite-tsconfig-paths](`https://www.npmjs.com/package/vite-tsconfig-paths`) which seemed like (if I'm understanding correctly) it might eliminate Step 3.  However, it notes some limitations due to Vite API, and obviously adds automagical complexity to make compiles work.  In the end, using pnpm workspaces in Step 3 feels logical and straightforward to me now, so I didn't try this plugin out.
