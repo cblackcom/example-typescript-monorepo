@@ -2,7 +2,7 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import { foo } from '@exmono/lib1'
+import { foo, TestSchema } from '@exmono/lib1'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -27,7 +27,7 @@ function App() {
         </p>
       </div>
       <p className="read-the-docs">
-        { foo() }
+        { foo() }!  { TestSchema.safeParse({isItAwesome: true}).success ? 'AWESOME!' : 'not awesome.' }
       </p>
     </>
   )

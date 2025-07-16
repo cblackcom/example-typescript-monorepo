@@ -2,5 +2,8 @@
 	"name": "@exmono/lib1",
 	"private": true,
 	"type": "module",
-	"main": "./index.ts"
+	"main": "./index.ts",
+	"dependencies": {
+		"zod": "catalog:"
+	}
 }
