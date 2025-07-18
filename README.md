@@ -1,24 +1,53 @@
 # example typescript monorepo.
 
+Updated July 2025
+
 ## Goals — Completed 🏆
 
 * Example Typescript monorepo containing a main web app and some dependency modules
 * [vite](https://vite.dev) for builds (and also dev server)
 * [pnpm](https://pnpm.io) instead of `npm` for **monorepo-capable** package management
-* Ability to change code in dependency modules, and use those changes immediately in the web app without recompiling 
+* Ability to change code in dependency modules, and use those changes immediately in the web app without recompiling anything
+* Ability to use [tsc](https://www.typescriptlang.org/docs/handbook/compiler-options.html) type checker to review type errors in the project
 * Ability to use [zod](https://zod.dev) schemas with ~~`.nativeEnum()`~~ `.enum()` (updated for Zod 4) across packages without issue, in both application code and [vitest](http://vitest.dev) tests
 * Identify **minimal** required configuration
 
 ## Observations
 
-* With the right setup, you don't need to compile packages in your monorepo before you use them by other packages in the same monorepo. Type declaration `d.ts` files also do not need to be generated.  (Publishing packages to npm or for use outside of the repo is outside the scope of this experiment.)
+* With the right setup, you don't need to compile packages in your monorepo before you use them by other packages in the same monorepo. Type declaration `d.ts` files also do not need to be generated for type checking to work within VSCode.  (Publishing packages to npm or for use outside of the repo is outside the scope of this experiment.)
 * Typescript has its way of resolving packages using `paths` parameters in `tsconfig`, and that drives all of VSCode's intellisense for imports and code.  This is proved in Step 2.
 * Separately, PNPM, with its workspace feature, creates a symlink inside a consuming package's `node_modules` directory to a dependency package within the monorepo.  This has the effect of the dependency's code showing up in `node_modules` just like any other npm-installed package.  The Vite dev server and compiler is then able to find and use the packages without any particular configuration.  This is proved in Steps 3 and 4.
-* Get the Typescript paths configuration and PNPM workspace configuration right, keep it simple, and you ought to be in business.
+
+## Type Checking
+
+To run the type checker for the whole repo:
+```bash
+cd frontend
+pnpm tsc -b --force
+```
+
+Note that `-b` flag means "build", but really just gives us the type checking output we are looking for, and `--force` causes the dependency package's types to be re-emitted (see Step 8) for up-to-date analysis.  Both should be included on every run.
+
+## Same external dependencies across packages
+
+The [PNPM catalog](https://pnpm.io/catalogs) feature used in these examples is useful for connecting the same external dependency  (such as `zod` or `@emotion/react`) version/instance to each internal package that requires it.  Unfortunately I messed it up not knowing what I was doing, when I upgraded the `@emotion` package in a real project, and it applied the update to one of my packages but not the other.  This caused for some very strange bugs (specifically, the context to provide `theme` object via React context to styled components was not populating in components from one of my two internal packages).  To fix, I did this:
+
+```bash
+# from project root
+# check the different copies of a package across your repo, e.g.
+pnpm why @emotion/react
+
+# got more than one copy?  try updating all the packages, and reinstalling...
+pnpm -r update
+pnpm i
+
+# see also: https://chatgpt.com/share/68799b02-c1c0-800b-aeef-8631627e031b
+```
 
 ## Other notes
 
 * At one point I came across the plugin [vite-tsconfig-paths](`https://www.npmjs.com/package/vite-tsconfig-paths`) which seemed like (if I'm understanding correctly) it might eliminate Step 3.  However, the documentation notes some limitations due to Vite API, and it obviously adds automagical complexity to make the compiles work.  In the end, using PNPM workspaces in Step 3 feels logical and straightforward to me now, so I didn't try the plugin out.
+* Although the official Typescript documentation suggests a workspace root tsconfig file, I found it in practice to be more trouble than it was worth.
 
 ---
 
@@ -149,3 +178,31 @@ At this point we're looking pretty good, except for the default `frontend` tscon
 * Drop `erasableSyntaxOnly` from `frontend` tsconfig
 
 Commit `2d358d18d6e9d1840b3d0bb82155ea4fbacd9585`
+
+### Step 8
+
+Implement Typescript [Project References](https://www.typescriptlang.org/docs/handbook/project-references.html) to allow different Typescript configurations within the separate packages and to help along the `tsc` command line type checker.
+
+* Add `emitDeclarationOnly` and `outDir` to `lib1` tsconfig
+* Add the `outDir` directory to `.gitignore`
+* Add `reference` block to `frontend` tsconfig pointing to `lib1`
+
+To try out the type checker, uncomment the `export const noGood` line (21) at the bottom of `modules/lib1/index.ts` to create a type error.  Then:
+
+```bash
+# from repo root
+cd frontend
+pnpm tsc -b --force
+```
+
+You should see an error pointing to the issue within `lib1`.  If you also go looking on the file system, you can find the `*.d.ts` files generated in `modules/lib1/dist-tsc`.
+
+With current Typescript 5.8 it doesn't appear possible to have `noEmit` (never generate `d.ts` files) on `lib1` and to have the command-line type checker work correctly from within `frontend`.  However, we never have to compile these `d.ts` files manually, and we can configure them to build out of sight, so it still meets the project goals.
+
+Commit `1d280fe08a6cdbb4f9854e77946c3adf4d7529cc`
+
+### Step 9
+
+Some additional tsconfig tweaks pulled over from the implementation of this strategy on a real project, including moving the code for `lib1` into a more realistic `src` directory.
+
+Commit `8abeb4bb495375f3e29810cd19ca380d476cb406`
