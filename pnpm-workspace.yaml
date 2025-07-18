@@ -1,6 +1,6 @@
 packages:
   - ./frontend
-  - ./modules/lib1
+  - ./modules/**
 
 catalog:
   vitest: ^3.2.4
