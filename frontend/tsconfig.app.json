@@ -24,12 +24,18 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
-    "baseUrl": ".",
+    // enabling `composite` causes typescript to not allow importing
+		// code from other projects by file reference
+		// e.g. from within frontend
+		// instead of import { TestSchema } from '../../modules/lib1' (not ideal)
+		// use import { TestSchema } from '@exmono/lib1'
+    "composite": true,
+
     "paths": {
-      "@exmono/lib1": ["../modules/lib1"]
+      "@exmono/lib1": ["../modules/lib1/src"]
     }
   },
-  "include": ["src"],
+  "include": ["./src"],
   "references": [
     { "path": "../modules/lib1" }
   ]

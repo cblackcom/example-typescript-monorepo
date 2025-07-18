@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "composite": true,
     "module": "ESNext",
     "target": "ESNext",
     "emitDeclarationOnly": true,
     "outDir": "dist-tsc",
-    "moduleResolution": "Node"
+    "moduleResolution": "bundler",
   },
-  "include": ["index.ts"]
+  "include": ["./src"]
 }
