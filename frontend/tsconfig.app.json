@@ -29,5 +29,8 @@
       "@exmono/lib1": ["../modules/lib1"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    { "path": "../modules/lib1" }
+  ]
 }
